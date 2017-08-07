@@ -22,24 +22,28 @@ spks = spks - spks(1); % to remove any bias and make time stamps start from 0
 Avar = zeros( length(T), 1 ); AF = zeros( length(T), 1 );
 
 for i = 1:length(T)
-    Avartmp = zeros( floor( ( Tend - Tstrt )/T(i) ) - 1, 1 ); 
-    eventnum = zeros( floor( ( Tend - Tstrt )/T(i) ) - 1, 1 );
-    for j = 1:floor( ( Tend - Tstrt )/T(i) ) - 1
-        Avartmp(j) = ( length( spks( ( spks >= j*T(i)) & ( spks < ( j + 1)*T(i) ))) - ...
-            length( spks( (spks >= (j - 1)*T(i)) & (spks < j*T(i) )))).^2;
-        eventnum(j) = length( spks( (spks >= (j - 1)*T(i)) & (spks < j*T(i) )));
-    end
-    Avar(i) = mean(Avartmp);
+    edges = 0:T(i):(Tend - Tstrt + T(i));
+    [eventnum, ~] = histcounts(spks, edges);
+    Avar(i) = mean(diff(eventnum).^2); % calculate Allan Variance
+    
+%     Avartmp = zeros( floor( ( Tend - Tstrt )/T(i) ) - 1, 1 ); 
+%     eventnum = zeros( floor( ( Tend - Tstrt )/T(i) ) - 1, 1 );
+%     for j = 1:floor( ( Tend - Tstrt )/T(i) ) - 1
+%         Avartmp(j) = ( length( spks( ( spks >= j*T(i)) & ( spks < ( j + 1)*T(i) ))) - ...
+%             length( spks( (spks >= (j - 1)*T(i)) & (spks < j*T(i) )))).^2;
+%         eventnum(j) = length( spks( (spks >= (j - 1)*T(i)) & (spks < j*T(i) )));
+%     end
+%     Avar(i) = mean(Avartmp);
     AF(i) = Avar(i) ./ ( 2*mean( eventnum ) );
     
 end
 
-
-figure;
-plot( T*dt, AF, 'LineWidth', 2 )
-title( 'Allan Factor' )
-xlabel( 'Time Intervals [ms]' )
-ylabel ( 'Allan Factor' )
+% 
+% figure;
+% plot( T*dt, AF, 'LineWidth', 2 )
+% title( 'Allan Factor' )
+% xlabel( 'Time Intervals [ms]' )
+% ylabel ( 'Allan Factor' )
 
 
 
