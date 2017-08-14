@@ -96,12 +96,14 @@ for i = 1:length(dataset)
     SpontFrac{i} = SpontFR{i}./FR{i}; % fraction of spontaneous activity
     
     AF{i}(isnan(AF{i})) = 0;
-    AllPars{i} = [AF{i}',ISIstd{i},SpontFR{i},SpontFrac{i},InOutDeg{i}'];
+%     AllPars{i} = [AF{i}',ISIstd{i},SpontFR{i},SpontFrac{i},InOutDeg{i}'];
+%     AllPars{i} = [AF{i}',ISIstd{i},InOutDeg{i}'];
+    AllPars{i} = [AF{i}'];
     AllPars_Agg = [AllPars_Agg;AllPars{i}]; % Aggregate All parameters from all data sets
 end
 
 opts = statset('Display','final');
-[idx,C] = kmeans(AllPars_Agg,3,'Distance','cityblock',...
+[idx,C] = kmeans(AllPars_Agg,2,'Distance','cityblock',...
     'Replicates',5,'Options',opts);
 
 figure;
@@ -124,7 +126,15 @@ figure;
 plot(score(:,1),score(:,2),'b.','MarkerSize',20);
 
 
+%% t-SNE on All Parameters
 
+
+tsneSpace = tsne(AllPars_Agg);
+
+figure;
+plot(tsneSpace(idx==1,1),tsneSpace(idx==1,2),'b.','MarkerSize',10); hold on
+plot(tsneSpace(idx==2,1),tsneSpace(idx==2,2),'r.','MarkerSize',10)
+title 't-SNE Space'
 
 
 %% Correlating different parameters
