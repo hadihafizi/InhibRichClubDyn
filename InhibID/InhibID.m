@@ -166,19 +166,55 @@ title 't-SNE Space- AF(6s), std(ISI)'
 %% t-SNE on ISI Distributions
 
 ISIcounts = zeros(length(ISI_All), length(0:max(cellfun(@max, ISI_All))));
-ISIcenters = zeros(length(ISI_All), length(0:max(cellfun(@max, ISI_All))));
+ISIcenters = zeros(1, length(0:max(cellfun(@max, ISI_All))));
 for k = 1:length(ISI_All)
-    [ISIcounts(k,:), ISIcenters(k,:)] = hist(ISI_All{k},(0:max(cellfun(@max, ISI_All)))); 
+    [ISIcounts(k,:), ISIcenters] = hist(ISI_All{k},(0:max(cellfun(@max, ISI_All)))); 
     ISIcounts(k,:) = ISIcounts(k,:)/sum(ISIcounts(k,:));
 end
 
 ISItsneSpace = tsne(ISIcounts);
+
+[idx,C] = kmeans(ISIcounts,2,'Distance','cityblock',...
+    'Replicates',5,'Options',opts);
 
 figure;
 plot(ISItsneSpace(idx==1,1),ISItsneSpace(idx==1,2),'b.','MarkerSize',10); hold on
 plot(ISItsneSpace(idx==2,1),ISItsneSpace(idx==2,2),'r.','MarkerSize',10)
 plot(ISItsneSpace(idx==3,1),ISItsneSpace(idx==3,2),'k.','MarkerSize',10)
 title 't-SNE Space- ISI Dist'
+
+figure;
+semilogx(ISIcenters(1,:), mean(ISIcounts(idx==1,:)), 'r-*', 'LineWidth', 2); hold on
+semilogx(ISIcenters(1,:), mean(ISIcounts(idx==2,:)), 'b-*', 'LineWidth', 2);
+legend('idx1','idx2')
+title 'ISI Distributions for K-means Categories'
+ylabel 'Probability'
+xlabel 'ISI [s]'
+
+%% t-SNE on JSDivergences of ISI Distributions
+
+asdf_all = cell(0,0);
+for i = 1:length(dataset)
+    load([dataset{i},'/asdf.mat']);
+    asdf_all = [asdf_all;asdf_raw(1:end-2)];
+end
+asdf_all = [asdf_all;asdf_raw(end-1:end)];
+asdf_all{end}(1) = length(asdf_all) - 2;
+
+[ jsdMat ] = ssJSD_DistMatrix_Hadi ( asdf_all, [.1 .5 1 .5 .1] );
+jsdMat = jsdMat + jsdMat';
+
+tsneSpace = tsne(jsdMat);
+idx = kmeans(jsdMat,5);
+
+figure;
+plot(tsneSpace(idx==1,1),tsneSpace(idx==1,2),'b.','MarkerSize',10); hold on
+plot(tsneSpace(idx==2,1),tsneSpace(idx==2,2),'r.','MarkerSize',10);
+plot(tsneSpace(idx==3,1),tsneSpace(idx==3,2),'k.','MarkerSize',10);
+plot(tsneSpace(idx==4,1),tsneSpace(idx==4,2),'y.','MarkerSize',10);
+plot(tsneSpace(idx==5,1),tsneSpace(idx==5,2),'c.','MarkerSize',10);
+
+
 
 %% Correlating different parameters
 % 
