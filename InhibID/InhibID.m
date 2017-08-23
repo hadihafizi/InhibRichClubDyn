@@ -204,8 +204,8 @@ asdf_all{end}(1) = length(asdf_all) - 2;
 [ jsdMat ] = ssJSD_DistMatrix_Hadi ( asdf_all, [.1 .5 1 .5 .1] );
 jsdMat = jsdMat + jsdMat';
 
-tsneSpace = tsne(jsdMat);
-idx = kmeans(jsdMat,5);
+tsneSpace = tsne(jsdMat, 3);
+idx = kmeans(jsdMat,2);
 
 figure;
 plot(tsneSpace(idx==1,1),tsneSpace(idx==1,2),'b.','MarkerSize',10); hold on
