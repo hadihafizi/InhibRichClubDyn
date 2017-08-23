@@ -1,4 +1,4 @@
-function [ js_diverge, crossC ] = findMaxDistSimilarity( dat1, dat2, varargin )
+function [ js_diverge ] = findMaxDistSimilarity( dat1, dat2, varargin )
 % [ js_diverge, crossC ] = findMaxDistSimilarity( dat1, dat2 )
 % Finds the Jensen-Shannon divergence between the probability distributions
 % represented by two sets of data when one set is shifted so that the two
@@ -16,7 +16,7 @@ function [ js_diverge, crossC ] = findMaxDistSimilarity( dat1, dat2, varargin )
 % deviation of 2. The shift to creat maximum overlap is found by selecting
 % the lag that maximized the cross-correlation between the two sets. Also
 % returns the maximum cross correlation between the two binned datasets.
-% 
+%
 % [ js_diverge, crossC ] = findMaxDistSimilarity( dat1, dat2, 'Kernel', kernel )
 %   Smooths the binned histograms of dat1 and dat2 before comparing them.
 %   Can be used to get rid of noisy data or to make individual values in
@@ -27,7 +27,7 @@ function [ js_diverge, crossC ] = findMaxDistSimilarity( dat1, dat2, varargin )
 %
 % [ js_diverge, crossC ] = findMaxDistSimilarity( dat1, dat2, 'Kernel', kernel, 'Edges', edges)
 %   Specify a vector of bin edges to use when binning [dat1 dat2]
-% 
+%
 % [ js_diverge, crossC ] = findMaxDistSimilarity( dat1, dat2, 'Kernel', kernel, 'BinMethod', binMethod)
 %   Specify the binning method to use when bining [dat1 dat2]
 %
@@ -70,8 +70,7 @@ function [ js_diverge, crossC ] = findMaxDistSimilarity( dat1, dat2, varargin )
 % POSSIBILITY OF SUCH DAMAGE.
 %==============================================================================
 
-narginchk(2, 6);
-nargoutchk(1,2);
+narginchk(2, 9);
 
 if ~isvector(dat1) || ~isvector(dat2)
     error('Data arguments must be vectors.');
@@ -86,37 +85,50 @@ edges = [];
 binMethod = '';
 kernel = [];
 
-for ii=1:2:length(varargin)
-    switch varargin{ii}
+ind = 1;
+while ind <= length(varargin)
+    switch varargin{ind}
         case 'Bins'
             if edSpec || binMethSpec
                 warning('Bin edges or method have already been specified. Ignoring "Bin" argument.');
             else
                 binSpec = 1;
-                noBins = varargin{ii+1};
+                noBins = varargin{ind+1};
                 if ~isscalar(noBins)
                     error('Bin # argument must be scalar!');
                 end
             end
+            ind = ind + 2;
         case 'Edges'
             if binSpec || binMethSpec
                 warning('Number of bins or bin method have already been specified. Ignoring "Edges" argument.');
             else
                 edSpec = 1;
-                edges = varargin{ii+1};
+                edges = varargin{ind+1};
                 if ~isvector(edges)
                     error('Bin edges must be a vector!');
                 end
             end
+            ind = ind + 2;
         case 'BinMethod'
             if binSpec || edSpec
                 warning('Number of bins or bin edges have already been specified. Ignoring "BinMethod" argument');
             else
                 binMethSpec = 1;
-                binMethod = varargin{ii+1};
+                binMethod = varargin{ind+1};
             end
+            ind = ind + 2;
         case 'Kernel'
-            kernel = varargin{ii+1};
+            kernel = varargin{ind+1};
+            ind = ind + 2;
+        case 'Cutoff'
+            dat1 = dat1(dat1<varargin{ind+1});
+            dat2 = dat2(dat2<varargin{ind+1});
+            ind = ind + 2;
+        case 'Normalize'   
+            dat1 = (dat1-mean(dat1))./std(dat1);
+            dat2 = (dat2-mean(dat2))./std(dat2);
+            ind=ind+1;
         otherwise
             error('Unrecognized input option');
     end
@@ -129,9 +141,7 @@ if isrow(dat2)
     dat2=dat2';
 end
 
-% Use default matlab binning method to find bin-size that covers whole
-% dataset (dat 1 & 2); TODO: Allow user to set bin method option or
-% specify their own bins.
+% Create bin-edges based on provided args...
 if binMethSpec
     [~, edges] = histcounts([dat1; dat2], 'BinMethod', binMethod);
 elseif binSpec
@@ -139,13 +149,7 @@ elseif binSpec
 elseif edSpec
     % Do nothing because we already have edges...
 else
-    [~, ed1] = histcounts(dat1);
-    [~, ed2] = histcounts(dat2);
-    minmin = min([min(dat1), min(dat2)]);
-    maxmax = max([max(dat1), max(dat2)]);
-    binwidth = min([ed1(2)-ed1(1), ed2(2)-ed2(1)]);
-    edges = (floor(minmin/binwidth)*binwidth):binwidth: ...
-        (ceil(maxmax/binwidth)*binwidth);
+    [~, edges] = histcounts([dat1; dat2]);
 end
 
 d1 = histcounts(dat1, edges, 'Normalization', 'probability');
@@ -164,7 +168,7 @@ d1=d1';
 d2=d2';
 
 % Find max cross correlation and lag where it happens...
-[crossC, mxLag] = max(conv(d1, flipud(d2), 'full'));
+[~, mxLag] = max(conv(d1, flipud(d2), 'full'));
 
 % how much to shift d1
 shift = mxLag - length(d1);
@@ -190,8 +194,8 @@ q_pr(inds2) = d2;
 m_pr = (p_pr + q_pr)./2;
 pnz = p_pr ~= 0;
 qnz = q_pr ~= 0;
-js_diverge = 0.5*sum(p_pr(pnz) .* log2(p_pr(pnz)./ m_pr(pnz))) + ...
-    0.5*sum(q_pr(qnz) .* log2(q_pr(qnz) ./ m_pr(qnz)));
-
+p_pr = 0.5 * sum(p_pr(pnz) .* log2(p_pr(pnz) ./ m_pr(pnz)));
+q_pr = 0.5 * sum(q_pr(qnz) .* log2(q_pr(qnz) ./ m_pr(qnz)));
+js_diverge = p_pr + q_pr;
 end
 
