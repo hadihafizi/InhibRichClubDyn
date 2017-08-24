@@ -204,15 +204,22 @@ asdf_all{end}(1) = length(asdf_all) - 2;
 [ jsdMat ] = ssJSD_DistMatrix_Hadi ( asdf_all, [.1 .5 1 .5 .1] );
 jsdMat = jsdMat + jsdMat';
 
-tsneSpace = tsne(jsdMat, 3);
+tsneSpace = tsne(jsdMat, [], 3);
 idx = kmeans(jsdMat,2);
 
 figure;
-plot(tsneSpace(idx==1,1),tsneSpace(idx==1,2),'b.','MarkerSize',10); hold on
-plot(tsneSpace(idx==2,1),tsneSpace(idx==2,2),'r.','MarkerSize',10);
-plot(tsneSpace(idx==3,1),tsneSpace(idx==3,2),'k.','MarkerSize',10);
-plot(tsneSpace(idx==4,1),tsneSpace(idx==4,2),'y.','MarkerSize',10);
-plot(tsneSpace(idx==5,1),tsneSpace(idx==5,2),'c.','MarkerSize',10);
+plot3(tsneSpace(idx==1,1),tsneSpace(idx==1,2),tsneSpace(idx==1,3),'b.','MarkerSize',10); hold on
+plot3(tsneSpace(idx==2,1),tsneSpace(idx==2,2),tsneSpace(idx==2,3),'r.','MarkerSize',10);
+plot3(tsneSpace(idx==3,1),tsneSpace(idx==3,2),tsneSpace(idx==3,3),'k.','MarkerSize',10);
+plot3(tsneSpace(idx==4,1),tsneSpace(idx==4,2),tsneSpace(idx==4,3),'y.','MarkerSize',10);
+plot3(tsneSpace(idx==5,1),tsneSpace(idx==5,2),tsneSpace(idx==5,3),'c.','MarkerSize',10);
+grid on
+% figure;
+% plot(tsneSpace(idx==1,1),tsneSpace(idx==1,2),'b.','MarkerSize',10); hold on
+% plot(tsneSpace(idx==2,1),tsneSpace(idx==2,2),'r.','MarkerSize',10);
+% plot(tsneSpace(idx==3,1),tsneSpace(idx==3,2),'k.','MarkerSize',10);
+% plot(tsneSpace(idx==4,1),tsneSpace(idx==4,2),'y.','MarkerSize',10);
+% plot(tsneSpace(idx==5,1),tsneSpace(idx==5,2),'c.','MarkerSize',10);
 
 
 
