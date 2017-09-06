@@ -3,9 +3,9 @@ function numbClust = numCluster(data, varargin)
 % Compute number of clusters in a data set using Sugar and James (2003)
 % Jump method.
 %
-% Inputs: data:
-%         maxK:
-%         y:
+% Inputs: data: n-by-p (n: number of observations, p: dimension of data)
+%         maxK: max number of clusters to consider
+%         y: transformation power (distortion.^(-y), typically y = p/2)
 %         plotjumps: Whether to plot figures (True/False)
 %         printresults: Whether to print number of clusters found
 %         (True/False)
