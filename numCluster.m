@@ -6,6 +6,7 @@ function numbClust = numCluster(data, varargin)
 % Inputs: data: n-by-p (n: number of observations, p: dimension of data)
 %         maxK: max number of clusters to consider
 %         y: transformation power (distortion.^(-y), typically y = p/2)
+%         Kreps: no. of repetitions of K-means algorithm
 %         plotjumps: Whether to plot figures (True/False)
 %         printresults: Whether to print number of clusters found
 %         (True/False)
@@ -22,28 +23,39 @@ switch nargin
     case 1
         maxK = 10;
         y = [1, 1.5, 2];
+        Kreps = 30;
         plotjumps = true;
         printresults = true;
     case 2
         maxK = varargin{1};
         y = [1, 1.5, 2];
+        Kreps = 30;
         plotjumps = true;
         printresults = true;
     case 3
         maxK = varargin{1};
         y = varargin{2};
+        Kreps = 30;
         plotjumps = true;
         printresults = true;
     case 4
         maxK = varargin{1};
         y = varargin{2};
-        plotjumps = varargin{3};
+        Kreps = varargin{3};
+        plotjumps = True;
         printresults = true;
     case 5
         maxK = varargin{1};
         y = varargin{2};
-        plotjumps = varargin{3};
-        printresults = varargin{4};
+        Kreps = varargin{3};
+        plotjumps = varargin{4};
+        printresults = True;
+    case 6
+        maxK = varargin{1};
+        y = varargin{2};
+        Kreps = varargin{3};
+        plotjumps = varargin{4};
+        printresults = varargin{5};
 end
     
 K = 1:maxK; % number of clusters to consider
@@ -52,7 +64,7 @@ p = size(data,2);
 sumd = zeros(length(K), 1);
 for k = K
 %   disp(['Clustering with K = ' num2str(k) ' ...']);
-  [~, ~, sumdK] = kmeans(data, k, 'emptyaction', 'singleton');
+  [~, ~, sumdK] = kmeans(data, k, 'Replicates',Kreps);
   sumd(k) = sum(sumdK);
 end
 % compute distortion
