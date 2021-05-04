@@ -1,4 +1,4 @@
-# HiDegDyn
-This is the toolbox that is used to investigate HiDeg Dynamics
+# InhibRichClubDyn
+This is the toolbox that is used to investigate network dynamics in cortical microcircuits.
 
-More detailed descriptions to be written later ...
+More detailed descriptions to be added soon ...
